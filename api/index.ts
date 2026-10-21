@@ -37,26 +37,26 @@ const MAX_HISTORY_TURNS = 6;
 const MAX_SPEECH_CHARS = 1500;
 
 const SYSTEM_INSTRUCTION = [
-  'Você é o Gemini, respondendo por voz através de uma caixa de som inteligente no Brasil.',
+  'Você é uma inteligência artificial respondendo por voz através da Alexa em português do Brasil.',
   'Suas respostas serão faladas em voz alta pela Alexa, portanto:',
-  '- Seja humano, natural, empático e extremamente conciso.',
-  '- Prefira responder em 1 ou 2 frases curtas e diretas. Evite enrolação, introduções vazias ou conclusões formais.',
-  '- Fale como em uma conversa de verdade entre duas pessoas: use tom espontâneo e coloquial natural.',
-  '- Se a resposta puder ser explicada em mais detalhes, dê a resposta básica primeiro e convide: "Quer que eu detalhe mais?".',
-  '- PROIBIDO usar formatação de texto: asteriscos, markdown, tópicos em lista, bullet points, emojis ou links.',
-  '- Escreva números, medidas e siglas por extenso ou de forma fonética para que a pronúncia soe impecável.',
+  '- Seja humano, espontâneo, empático e muito direto.',
+  '- Responda preferencialmente em 1 ou 2 frases curtas. Evite introduções clichês ou conclusões óbvias.',
+  '- Use ritmo natural de conversa humana: use vírgulas e reticências para respirar e dar entonação.',
+  '- Se for um tema longo, dê a resposta principal primeiro e termine com uma pergunta curta, como: "Quer que eu aprofunde?".',
+  '- PROIBIDO usar formatação de texto: asteriscos, markdown, listas com marcadores, emojis ou links.',
+  '- Escreva números, siglas e medidas de forma por extenso ou fonética para pronúncia natural.',
 ].join('\n');
 
-const REPROMPT = 'Diga o que você precisa, ou diga tchau para sair.';
-const GOODBYE = 'Até mais!';
+const REPROMPT = '<speak><prosody rate="104%">Diga o que você precisa, ou diga tchau para sair.</prosody></speak>';
+const GOODBYE = '<speak><prosody rate="104%">Até mais!</prosody></speak>';
 
 /** Termos que, quando ditos isoladamente, encerram a sessão. */
 const EXIT_PATTERN =
-  /^(neur[oô]nios?\s+|gemini\s+)?(tchau|tchau tchau|sair|parar|pare|para|encerrar|encerra|fechar|chega|obrigad[oa],? tchau|at[eé] mais|at[eé] logo|desligar|cancelar|valeu tchau)[.!]?$/i;
+  /^(modo inteligente\s+|inteligente\s+|gemini\s+)?(tchau|tchau tchau|sair|parar|pare|para|encerrar|encerra|fechar|chega|obrigad[oa],? tchau|at[eé] mais|at[eé] logo|desligar|cancelar|valeu tchau)[.!]?$/i;
 
 /** Remove prefixos de chamada caso o reconhecimento os capture no início da pergunta. */
 const TRIGGER_PREFIX =
-  /^(neur[oô]nios?|ligar neur[oô]nios?|ativar neur[oô]nios?|gemini|gêmini|djemini|gimini)[,\s]+/i;
+  /^(modo inteligente|inteligente|ligar inteligente|ativar inteligente|gemini|gêmini|djemini|neur[oô]nios?)[,\s]+/i;
 
 // ---------------------------------------------------------------------------
 // Cliente Gemini (reutilizado entre invocações "quentes" da função)
@@ -105,7 +105,7 @@ async function askGemini(question: string, history: HistoryTurn[]): Promise<stri
 // Utilidades de fala
 // ---------------------------------------------------------------------------
 
-/** Converte texto do LLM em conteúdo seguro para SSML. */
+/** Converte texto do LLM em conteúdo SSML natural com ritmo humanizado e pausas. */
 function toSpeech(text: string): string {
   let clean = text
     .replace(/```[\s\S]*?```/g, ' ')
@@ -119,12 +119,22 @@ function toSpeech(text: string): string {
     const lastStop = Math.max(cut.lastIndexOf('. '), cut.lastIndexOf('? '), cut.lastIndexOf('! '));
     clean = lastStop > 200 ? cut.slice(0, lastStop + 1) : `${cut}...`;
   }
-  return clean
+
+  // Sanitização para XML/SSML
+  const safe = clean
     .replace(/&/g, ' e ')
     .replace(/</g, ' menor que ')
     .replace(/>/g, ' maior que ')
     .replace(/"/g, '')
     .replace(/'/g, '');
+
+  // Adiciona micropausas de respiração natural após pontos e interrogações
+  const naturalFlow = safe
+    .replace(/([.!?])\s+/g, '$1 <break time="220ms"/> ')
+    .replace(/,\s+/g, ', <break time="120ms"/> ');
+
+  // Envelopa com prosódia mais viva e fluida (velocidade 105% e tom levemente elevado)
+  return `<speak><prosody rate="105%" pitch="+2%">${naturalFlow}</prosody></speak>`;
 }
 
 /** Extrai o texto livre de qualquer um dos slots de captura ampla. */
@@ -166,8 +176,8 @@ const LaunchRequestHandler: RequestHandler = {
   canHandle: (h) => getRequestType(h.requestEnvelope) === 'LaunchRequest',
   handle: (h) =>
     h.responseBuilder
-      .speak('Modo ativado.')
-      .reprompt('Pode fazer a sua pergunta.')
+      .speak('<speak><prosody rate="105%">Modo ativado.</prosody></speak>')
+      .reprompt(REPROMPT)
       .withShouldEndSession(false)
       .getResponse(),
 };

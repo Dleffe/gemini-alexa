@@ -1,17 +1,14 @@
 {
   "interactionModel": {
     "languageModel": {
-      "invocationName": "ligar neurônios",
+      "invocationName": "modo inteligente",
       "intents": [
         {
           "name": "CustomTriggerIntent",
           "slots": [{ "name": "query", "type": "AMAZON.SearchQuery" }],
           "samples": [
-            "neurônios {query}",
-            "neurônio {query}",
-            "ligar neurônios {query}",
-            "gemini {query}",
-            "gêmini {query}",
+            "inteligente {query}",
+            "modo inteligente {query}",
             "ei {query}",
             "oi {query}",
             "me diga {query}",
@@ -59,8 +56,9 @@
             "valeu tchau",
             "sair",
             "desligar",
-            "desligar neurônios",
             "desativar",
+            "desligar modo inteligente",
+            "sair do modo inteligente",
             "encerrar",
             "pode encerrar",
             "pode sair",
