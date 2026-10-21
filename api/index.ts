@@ -37,23 +37,25 @@ const MAX_HISTORY_TURNS = 6;
 const MAX_SPEECH_CHARS = 1500;
 
 const SYSTEM_INSTRUCTION = [
-  'Você é o Alexo, um assistente de voz em português do Brasil rodando em um dispositivo Amazon Echo.',
-  'Suas respostas serão convertidas em fala, portanto:',
-  '- Responda de forma natural, direta e conversacional, em no máximo 3 ou 4 frases, salvo se o usuário pedir detalhes.',
-  '- NÃO use markdown, listas com marcadores, asteriscos, emojis, tabelas, URLs ou blocos de código.',
-  '- Escreva números, siglas e unidades de forma que soem bem quando lidos em voz alta.',
-  '- Se a pergunta for ambígua, faça uma pergunta curta de esclarecimento.',
+  'Você é o Gemini, respondendo por voz através de uma caixa de som inteligente no Brasil.',
+  'Suas respostas serão faladas em voz alta pela Alexa, portanto:',
+  '- Seja humano, natural, empático e extremamente conciso.',
+  '- Prefira responder em 1 ou 2 frases curtas e diretas. Evite enrolação, introduções vazias ou conclusões formais.',
+  '- Fale como em uma conversa de verdade entre duas pessoas: use tom espontâneo e coloquial natural.',
+  '- Se a resposta puder ser explicada em mais detalhes, dê a resposta básica primeiro e convide: "Quer que eu detalhe mais?".',
+  '- PROIBIDO usar formatação de texto: asteriscos, markdown, tópicos em lista, bullet points, emojis ou links.',
+  '- Escreva números, medidas e siglas por extenso ou de forma fonética para que a pronúncia soe impecável.',
 ].join('\n');
 
-const REPROMPT = 'Pode perguntar mais alguma coisa, ou diga tchau para sair.';
+const REPROMPT = 'Diga o que mais precisa, ou tchau para sair.';
 const GOODBYE = 'Até mais!';
 
 /** Termos que, quando ditos isoladamente, encerram a sessão. */
 const EXIT_PATTERN =
-  /^(alexo\s+)?(tchau|tchau tchau|sair|parar|pare|para|encerrar|encerra|fechar|chega|obrigad[oa],? tchau|at[eé] mais|at[eé] logo|desligar|cancelar)[.!]?$/i;
+  /^(gemini\s+)?(tchau|tchau tchau|sair|parar|pare|para|encerrar|encerra|fechar|chega|obrigad[oa],? tchau|at[eé] mais|at[eé] logo|desligar|cancelar|valeu tchau)[.!]?$/i;
 
 /** Remove o termo de gatilho caso o reconhecimento de fala o inclua no slot. */
-const TRIGGER_PREFIX = /^(alexo|alecho|aleixo|alesso|alex[oó]|a lexo)[,\s]+/i;
+const TRIGGER_PREFIX = /^(gemini|gêmini|djemini|gimini|gemine)[,\s]+/i;
 
 // ---------------------------------------------------------------------------
 // Cliente Gemini (reutilizado entre invocações "quentes" da função)
@@ -163,8 +165,8 @@ const LaunchRequestHandler: RequestHandler = {
   canHandle: (h) => getRequestType(h.requestEnvelope) === 'LaunchRequest',
   handle: (h) =>
     h.responseBuilder
-      .speak('Oi, aqui é o Alexo. O que você quer saber?')
-      .reprompt('Pode perguntar o que quiser.')
+      .speak('Pronto. O que manda?')
+      .reprompt('Pode falar a sua pergunta.')
       .withShouldEndSession(false)
       .getResponse(),
 };
@@ -236,7 +238,7 @@ const HelpIntentHandler: RequestHandler = {
     getIntentName(h.requestEnvelope) === 'AMAZON.HelpIntent',
   handle: (h) =>
     h.responseBuilder
-      .speak('Diga Alexo seguido da sua pergunta, por exemplo: Alexo, qual a distância até a Lua? Para sair, diga tchau.')
+      .speak('Você pode fazer qualquer pergunta diretamente ou chamando Gemini. Para sair, basta dizer tchau.')
       .reprompt(REPROMPT)
       .withShouldEndSession(false)
       .getResponse(),
@@ -257,7 +259,7 @@ const FallbackIntentHandler: RequestHandler = {
     getIntentName(h.requestEnvelope) === 'AMAZON.FallbackIntent',
   handle: (h) =>
     h.responseBuilder
-      .speak('Não peguei isso. Tente começar com: Alexo, e depois a sua pergunta.')
+      .speak('Não consegui entender. Tente perguntar de novo.')
       .reprompt(REPROMPT)
       .withShouldEndSession(false)
       .getResponse(),
