@@ -1,0 +1,25 @@
+{
+  "name": "gemini-alexa",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Skill Alexa conversacional contínua ('Alexo') conectada ao Google Gemini 2.5 Flash, hospedada na Vercel.",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
+    "dev": "vercel dev",
+    "test:local": "node --experimental-strip-types scripts/local-test.mts"
+  },
+  "dependencies": {
+    "@google/genai": "2.30.0",
+    "ask-sdk-core": "2.14.0",
+    "ask-sdk-express-adapter": "2.14.0",
+    "ask-sdk-model": "1.86.0"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.5",
+    "typescript": "7.0.2"
+  }
+}
