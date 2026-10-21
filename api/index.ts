@@ -47,8 +47,8 @@ const SYSTEM_INSTRUCTION = [
   '- Escreva números, siglas e medidas de forma por extenso ou fonética para pronúncia natural.',
 ].join('\n');
 
-const REPROMPT = '<speak><prosody rate="104%">Diga o que você precisa, ou diga tchau para sair.</prosody></speak>';
-const GOODBYE = '<speak><prosody rate="104%">Até mais!</prosody></speak>';
+const REPROMPT = 'Diga o que você precisa, ou diga tchau para sair.';
+const GOODBYE = 'Até mais!';
 
 /** Termos que, quando ditos isoladamente, encerram a sessão. */
 const EXIT_PATTERN =
@@ -105,7 +105,7 @@ async function askGemini(question: string, history: HistoryTurn[]): Promise<stri
 // Utilidades de fala
 // ---------------------------------------------------------------------------
 
-/** Converte texto do LLM em conteúdo SSML natural com ritmo humanizado e pausas. */
+/** Converte texto do LLM em conteúdo seguro para fala da Alexa. */
 function toSpeech(text: string): string {
   let clean = text
     .replace(/```[\s\S]*?```/g, ' ')
@@ -119,22 +119,12 @@ function toSpeech(text: string): string {
     const lastStop = Math.max(cut.lastIndexOf('. '), cut.lastIndexOf('? '), cut.lastIndexOf('! '));
     clean = lastStop > 200 ? cut.slice(0, lastStop + 1) : `${cut}...`;
   }
-
-  // Sanitização para XML/SSML
-  const safe = clean
+  return clean
     .replace(/&/g, ' e ')
     .replace(/</g, ' menor que ')
     .replace(/>/g, ' maior que ')
     .replace(/"/g, '')
     .replace(/'/g, '');
-
-  // Adiciona micropausas de respiração natural após pontos e interrogações
-  const naturalFlow = safe
-    .replace(/([.!?])\s+/g, '$1 <break time="220ms"/> ')
-    .replace(/,\s+/g, ', <break time="120ms"/> ');
-
-  // Envelopa com prosódia mais viva e fluida (velocidade 105% e tom levemente elevado)
-  return `<speak><prosody rate="105%" pitch="+2%">${naturalFlow}</prosody></speak>`;
 }
 
 /** Extrai o texto livre de qualquer um dos slots de captura ampla. */
@@ -176,7 +166,7 @@ const LaunchRequestHandler: RequestHandler = {
   canHandle: (h) => getRequestType(h.requestEnvelope) === 'LaunchRequest',
   handle: (h) =>
     h.responseBuilder
-      .speak('<speak><prosody rate="105%">Modo ativado.</prosody></speak>')
+      .speak('Modo ativado.')
       .reprompt(REPROMPT)
       .withShouldEndSession(false)
       .getResponse(),
