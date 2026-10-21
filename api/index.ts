@@ -47,15 +47,16 @@ const SYSTEM_INSTRUCTION = [
   '- Escreva números, medidas e siglas por extenso ou de forma fonética para que a pronúncia soe impecável.',
 ].join('\n');
 
-const REPROMPT = 'Diga o que mais precisa, ou tchau para sair.';
+const REPROMPT = 'Diga o que você precisa, ou diga tchau para sair.';
 const GOODBYE = 'Até mais!';
 
 /** Termos que, quando ditos isoladamente, encerram a sessão. */
 const EXIT_PATTERN =
-  /^(gemini\s+)?(tchau|tchau tchau|sair|parar|pare|para|encerrar|encerra|fechar|chega|obrigad[oa],? tchau|at[eé] mais|at[eé] logo|desligar|cancelar|valeu tchau)[.!]?$/i;
+  /^(neur[oô]nios?\s+|gemini\s+)?(tchau|tchau tchau|sair|parar|pare|para|encerrar|encerra|fechar|chega|obrigad[oa],? tchau|at[eé] mais|at[eé] logo|desligar|cancelar|valeu tchau)[.!]?$/i;
 
-/** Remove o termo de gatilho caso o reconhecimento de fala o inclua no slot. */
-const TRIGGER_PREFIX = /^(gemini|gêmini|djemini|gimini|gemine)[,\s]+/i;
+/** Remove prefixos de chamada caso o reconhecimento os capture no início da pergunta. */
+const TRIGGER_PREFIX =
+  /^(neur[oô]nios?|ligar neur[oô]nios?|ativar neur[oô]nios?|gemini|gêmini|djemini|gimini)[,\s]+/i;
 
 // ---------------------------------------------------------------------------
 // Cliente Gemini (reutilizado entre invocações "quentes" da função)
@@ -165,8 +166,8 @@ const LaunchRequestHandler: RequestHandler = {
   canHandle: (h) => getRequestType(h.requestEnvelope) === 'LaunchRequest',
   handle: (h) =>
     h.responseBuilder
-      .speak('Pronto. O que manda?')
-      .reprompt('Pode falar a sua pergunta.')
+      .speak('Modo ativado.')
+      .reprompt('Pode fazer a sua pergunta.')
       .withShouldEndSession(false)
       .getResponse(),
 };
